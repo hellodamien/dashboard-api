@@ -31,6 +31,12 @@ app.get('/docs', Redoc({
 
 app.post('/register', async (req, res) => {
   const { email, password } = req.body;
+
+  const exists = await prisma.user.findUnique({ where: { email } });
+  if (exists) {
+    return res.status(400).json({ error: 'Email already in use' });
+  }
+
   const hashedPassword = await bcrypt.hash(password, 10);
   const user = await prisma.user.create({
     data: { email, password: hashedPassword },
