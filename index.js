@@ -5,11 +5,13 @@ import jwt from 'jsonwebtoken';
 import Redoc from 'redoc-express';
 import fs from 'fs';
 import path from 'path';
+import cors from 'cors';
 
 const prisma = new PrismaClient();
 const SECRET_KEY = 'your-secret-key'; // Change this in production
 
 const app = express();
+app.use(cors());
 app.use(express.json());
 
 const __dirname = path.resolve();
