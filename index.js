@@ -69,5 +69,31 @@ app.get('/dashboard', async (req, res) => {
   }
 });
 
+app.post('/change-password', async (req, res) => {
+  const token = req.headers.authorization?.split(' ')[1];
+  if (!token) return res.status(401).json({ error: 'Unauthorized' });
+
+  try {
+    const { userId } = jwt.verify(token, SECRET_KEY);
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+
+    const { oldPassword, newPassword } = req.body;
+
+    if (!user || !(await bcrypt.compare(oldPassword, user.password))) {
+      return res.status(401).json({ error: 'Invalid credentials' });
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    await prisma.user.update({
+      where: { id: userId },
+      data: { password: hashedPassword },
+    });
+
+    res.json({ message: 'Password updated' });
+  } catch {
+    res.status(401).json({ error: 'Invalid token' });
+  }
+});
+
 app.listen(3000, () => console.log('Server running on port 3000'));
 
